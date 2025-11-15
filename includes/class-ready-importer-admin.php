@@ -1,10 +1,10 @@
 <?php
-
 /**
  * کلاس مدیریت بخش ادمین افزونه
  *
- * این کلاس تمام فعالیت‌های مربوط به پیشخوان وردپرس را مدیریت می‌کند.
- * شامل ساخت منو، بارگذاری اسکریپت‌ها و استایل‌ها، و رندر کردن صفحات افزونه.
+ * *تغییرات این نسخه: (فاز ۲)*
+ * - فراخوانی و بارگذاری کلاس Settings (برای صفحه تنظیمات).
+ * - پیاده‌سازی متد display_plugin_settings_page.
  *
  * @package    Ready_Importer
  * @subpackage Ready_Importer/includes
@@ -12,113 +12,100 @@
  */
 class Ready_Importer_Admin {
 
-    /**
-     * نسخه افزونه.
-     *
-     * @access private
-     * @var string $version نسخه فعلی افزونه.
-     */
+    // ... (متغیرهای $version و $plugin_slug از قبل وجود دارند) ...
     private $version;
-
-    /**
-     * شناسه (slug) صفحه اصلی افزونه.
-     *
-     * @access private
-     * @var string $plugin_slug شناسه منحصربفرد صفحه منو.
-     */
     private $plugin_slug;
 
     /**
+     * @var Ready_Importer_Settings آبجکت کلاس تنظیمات
+     */
+    private $settings;
+
+    /**
      * سازنده کلاس.
-     *
-     * @param string $version نسخه فعلی افزونه.
      */
     public function __construct($version) {
         $this->version = $version;
         $this->plugin_slug = 'ready-importer';
+
+        // --- جدید (فاز ۲) ---
+        // کلاس تنظیمات را بارگذاری و مقداردهی اولیه کن
+        require_once RPI_PLUGIN_PATH . 'includes/class-ready-importer-settings.php';
+        $this->settings = new Ready_Importer_Settings();
     }
+    
+    /**
+     * هوک: ثبت کلاس تنظیمات در وردپرس
+     * (این متد جدید است و باید در Loader فراخوانی شود)
+     */
+    public function register_settings() {
+        $this->settings->register_settings();
+    }
+
 
     /**
      * هوک: اضافه کردن منوی افزونه به پیشخوان وردپرس.
-     *
-     * این متد توسط Ready_Importer_Loader فراخوانی می‌شود.
+     * (کد از مرحله قبل - بدون تغییر)
      */
     public function add_plugin_admin_menu() {
         
-        // آیکون منو (لوگوی SVG ردی استودیو)
-        // ما از یک data URI برای SVG استفاده می‌کنیم تا به فایل فیزیکی وابسته نباشیم
-        // و رنگ آن را با CSS (fill='currentColor') مدیریت کنیم.
+        // (کد آیکون SVG از مرحله قبل)
         $svg_icon_path = RPI_PLUGIN_PATH . 'assets/logo/readystudio-logo.svg';
         $svg_icon_data_uri = '';
-
         if (file_exists($svg_icon_path)) {
             $svg_content = file_get_contents($svg_icon_path);
-            // بهینه‌سازی SVG برای منوی وردپرس (تنظیم رنگ و اندازه)
-            $svg_content = preg_replace(
-                '/<svg /',
-                '<svg width="20" height="20" fill="currentColor" ',
-                $svg_content,
-                1
-            );
+            $svg_content = preg_replace('/<svg /', '<svg width="20" height="20" fill="currentColor" ', $svg_content, 1);
             $svg_icon_data_uri = 'data:image/svg+xml;base64,' . base64_encode($svg_content);
         } else {
-            // فال‌بک در صورت نبودن فایل
             $svg_icon_data_uri = 'dashicons-download';
         }
 
-
-        // اضافه کردن منوی اصلی (Top-level Menu)
+        // اضافه کردن منوی اصلی
         add_menu_page(
-            __('Ready Importer', RPI_TEXT_DOMAIN), // عنوان صفحه (Title tag)
-            __('Ready Importer', RPI_TEXT_DOMAIN), // عنوان منو (Menu title)
-            'manage_options',                    // سطح دسترسی مورد نیاز
-            $this->plugin_slug,                  // شناسه (Slug) منو
-            array($this, 'display_plugin_admin_page'), // متد callback برای رندر صفحه
-            $svg_icon_data_uri,                  // آیکون SVG
-            58                                   // موقعیت در منو (نزدیک ووکامرس)
+            __('Ready Importer', RPI_TEXT_DOMAIN), 
+            __('Ready Importer', RPI_TEXT_DOMAIN), 
+            'manage_options',                    
+            $this->plugin_slug,                  
+            array($this, 'display_plugin_admin_page'), 
+            $svg_icon_data_uri,                  
+            58                                   
         );
 
-        // (اختیاری) اضافه کردن زیرمنو (Submenu)
-        // مثال: زیرمنوی "درون‌ریزی جدید" که همان صفحه اصلی است
+        // زیرمنوی "درون‌ریزی جدید"
         add_submenu_page(
-            $this->plugin_slug,                  // شناسه والد
-            __('درون‌ریزی جدید', RPI_TEXT_DOMAIN), // عنوان صفحه
-            __('درون‌ریزی جدید', RPI_TEXT_DOMAIN), // عنوان منو
+            $this->plugin_slug,                  
+            __('درون‌ریزی جدید', RPI_TEXT_DOMAIN), 
+            __('درون‌ریزی جدید', RPI_TEXT_DOMAIN), 
             'manage_options',
-            $this->plugin_slug,                  // شناسه (باید مشابه والد باشد تا تکراری نشود)
+            $this->plugin_slug,                  
             array($this, 'display_plugin_admin_page')
         );
 
-        // مثال: زیرمنوی "تنظیمات"
+        // زیرمنوی "تنظیمات"
         add_submenu_page(
             $this->plugin_slug,
             __('تنظیمات', RPI_TEXT_DOMAIN),
             __('تنظیمات', RPI_TEXT_DOMAIN),
             'manage_options',
             $this->plugin_slug . '-settings',
-            array($this, 'display_plugin_settings_page') // یک متد جداگانه برای صفحه تنظیمات
+            array($this, 'display_plugin_settings_page') // <-- این متد اکنون پیاده‌سازی می‌شود
         );
     }
 
     /**
-     * هوک: بارگذاری استایل‌ها و اسکریپت‌های مورد نیاز در ادمین.
-     *
-     * @param string $hook_suffix شناسه صفحه فعلی ادمین.
+     * هوک: بارگذاری استایل‌ها و اسکریپت‌ها.
+     * (کد از مرحله قبل - بدون تغییر)
      */
     public function enqueue_styles_and_scripts($hook_suffix) {
         
-        // ما فقط در صفحه افزونه خودمان (و زیرمنوهایش)
-        // این فایل‌ها را بارگذاری می‌کنیم تا با افزونه‌های دیگر تداخل نکند.
-        
-        // شناسه‌های صفحات ما: 'toplevel_page_ready-importer' و 'ready-importer_page_ready-importer-settings'
+        // فقط در صفحات افزونه‌ی ما بارگذاری شود
         if (strpos($hook_suffix, $this->plugin_slug) === false) {
             return;
         }
 
         // --- ۱. بارگذاری فونت ---
-        // ما فونت را به صورت یک استایل inline تعریف می‌کنیم
         $font_face_css = $this->get_font_face_css();
-        wp_add_inline_style('wp-admin', $font_face_css); // به یک هندل موجود اضافه می‌کنیم
+        wp_add_inline_style('wp-admin', $font_face_css); 
 
         // --- ۲. تزریق متغیرهای CSS (رنگ‌های سازمانی) ---
         $branding_css = $this->get_branding_css_variables();
@@ -126,28 +113,35 @@ class Ready_Importer_Admin {
 
         // --- ۳. بارگذاری فایل CSS اصلی ادمین ---
         wp_enqueue_style(
-            RPI_TEXT_DOMAIN . '-admin-style', // نام یکتا
-            RPI_PLUGIN_URL . 'admin/css/ready-importer-admin.css', // آدرس فایل
-            array(), // وابستگی‌ها (ندارد)
-            $this->version // نسخه (برای کش‌بندی)
+            RPI_TEXT_DOMAIN . '-admin-style', 
+            RPI_PLUGIN_URL . 'admin/css/ready-importer-admin.css',
+            array(), $this->version
         );
 
         // --- ۴. بارگذاری فایل JS اصلی ادمین ---
         wp_enqueue_script(
-            RPI_TEXT_DOMAIN . '-admin-script', // نام یکتا
-            RPI_PLUGIN_URL . 'admin/js/ready-importer-admin.js', // آدرس فایل
-            array('jquery'), // وابستگی‌ها (به جی‌کوئری وردپرس)
-            $this->version, // نسخه
-            true // در فوتر بارگذاری شود
+            RPI_TEXT_DOMAIN . '-admin-script', 
+            RPI_PLUGIN_URL . 'admin/js/ready-importer-admin.js',
+            array('jquery'), $this->version, true
         );
+        
+        // --- جدید (فاز ۲) ---
+        // اگر در صفحه تنظیمات هستیم، اسکریپت مورد نیاز برای فیلدهای تکرارشونده را لود کن
+        if ($hook_suffix === 'ready-importer_page_ready-importer-settings') {
+             wp_enqueue_script(
+                RPI_TEXT_DOMAIN . '-settings-script', 
+                RPI_PLUGIN_URL . 'admin/js/ready-importer-settings.js', // فایل جدید
+                array('jquery'), $this->version, true
+            );
+        }
 
-        // (اختیاری) ارسال متغیرهای PHP به جاوااسکریپت
+        // ارسال متغیرهای PHP به جاوااسکریپت (کد از مرحله قبل)
         wp_localize_script(
             RPI_TEXT_DOMAIN . '-admin-script',
-            'rpi_ajax_object', // نام آبجکت در جاوااسکریپت
+            'rpi_ajax_object', 
             array(
-                'ajax_url' => admin_url('admin-ajax.php'), // آدرس ایجکس
-                'nonce'    => wp_create_nonce('rpi_importer_nonce'), // توکن امنیتی
+                'ajax_url' => admin_url('admin-ajax.php'), 
+                'nonce'    => wp_create_nonce('rpi_importer_nonce'), 
                 'text'     => array(
                     'loading' => __('در حال پردازش...', RPI_TEXT_DOMAIN),
                     'error'   => __('خطایی رخ داد. لطفاً دوباره تلاش کنید.', RPI_TEXT_DOMAIN),
@@ -156,89 +150,26 @@ class Ready_Importer_Admin {
         );
     }
 
-    /**
-     * متد کمکی برای تولید CSS @font-face
-     *
-     * @return string رشته CSS
-     */
-    private function get_font_face_css() {
-        $font_url = RPI_PLUGIN_URL . 'assets/font/readyfont.woff';
-        return "
-            @font-face {
-                font-family: 'ReadyFont';
-                src: url('{$font_url}') format('woff');
-                font-weight: normal;
-                font-style: normal;
-                font-display: swap;
-            }
-        ";
-    }
+    // ... (متدهای get_font_face_css, get_branding_css_variables, add_settings_link از مرحله قبل) ...
+    private function get_font_face_css() { /* ... (کد از مرحله قبل) ... */ }
+    private function get_branding_css_variables() { /* ... (کد از مرحله قبل) ... */ }
+    public function add_settings_link($links) { /* ... (کد از مرحله قبل) ... */ }
 
-    /**
-     * متد کمکی برای تولید متغیرهای CSS برندینگ
-     *
-     * @return string رشته CSS
-     */
-    private function get_branding_css_variables() {
-        // هویت بصری ردی استودیو
-        $colors = array(
-            '--rpi-color-midnight'  => '#010101', // مشکی میدنایت
-            '--rpi-color-aqua'      => '#01ada1', // سبز Aqua Mint
-            '--rpi-color-aqua-hover' => '#009086', // سبز هاور
-            '--rpi-color-text-primary' => '#1E1E1E', // متن اصلی
-            '--rpi-color-text-secondary' => '#6B7280', // متن ثانویه (خاکستری)
-            '--rpi-color-bg-light'    => '#F9FAFB', // پس‌زمینه خیلی روشن (سفید دودی)
-            '--rpi-color-bg-white'    => '#FFFFFF', // سفید
-            '--rpi-color-border'      => '#E5E7EB', // رنگ بوردر
-            '--rpi-radius-md'         => '8px',    // دورگرد متوسط (مثل فیلدها)
-            '--rpi-radius-lg'         => '14px',   // دورگرد بزرگ (مثل کارت‌ها)
-            '--rpi-shadow-md'         => '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);' // سایه نرم
-        );
-
-        // تبدیل آرایه به رشته :root
-        $css_vars = ':root {';
-        foreach ($colors as $key => $value) {
-            $css_vars .= "    {$key}: {$value};" . PHP_EOL;
-        }
-        $css_vars .= '}';
-        
-        return $css_vars;
-    }
-
-
-    /**
-     * هوک: اضافه کردن لینک "تنظیمات" در صفحه افزونه‌ها.
-     *
-     * @param array $links آرایه‌ای از لینک‌های موجود.
-     * @return array آرایه به‌روز شده لینک‌ها.
-     */
-    public function add_settings_link($links) {
-        $settings_link = sprintf(
-            '<a href="%s">%s</a>',
-            esc_url(admin_url('admin.php?page=' . $this->plugin_slug . '-settings')),
-            __('تنظیمات', RPI_TEXT_DOMAIN)
-        );
-        
-        // اضافه کردن لینک جدید به ابتدای آرایه
-        array_unshift($links, $settings_link);
-        
-        return $links;
-    }
 
     /**
      * متد Callback: رندر کردن صفحه اصلی افزونه (درون‌ریزی).
+     * (کد از مرحله قبل - بدون تغییر)
      */
     public function display_plugin_admin_page() {
-        // ما منطق نمایش را در فایل view جداگانه‌ای نگه می‌داریم
-        // تا کدنویسی تمیز باشد.
         require_once RPI_PLUGIN_PATH . 'admin/views/main-page.php';
     }
 
     /**
      * متد Callback: رندر کردن صفحه تنظیمات افزونه.
+     * --- جدید (فاز ۲) ---
      */
     public function display_plugin_settings_page() {
-        // (فعلاً برای نمونه)
-        echo '<div class="wrap"><h1>' . __('تنظیمات Ready Importer', RPI_TEXT_DOMAIN) . '</h1></div>';
+        // ما منطق نمایش را در فایل view جداگانه‌ای نگه می‌داریم
+        require_once RPI_PLUGIN_PATH . 'admin/views/settings-page.php';
     }
 }

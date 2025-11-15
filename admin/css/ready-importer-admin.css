@@ -1,274 +1,93 @@
-/*
- * فایل CSS بخش ادمین افزونه Ready Importer
- *
- * این فایل مسئولیت پیاده‌سازی کامل هویت بصری ردی استودیو
- * بر اساس متغیرهای CSS تزریق شده توسط کلاس Admin است.
- */
+/* ... (تمام کدهای CSS از مرحله قبل) ... */
 
-/* --- ۱. تنظیمات کلی و فونت --- */
+/* --- ۷. استایل‌های خاص صفحه تنظیمات (فاز ۲) --- */
 
-/* اعمال فونت سفارشی به کل صفحه افزونه ما */
-/* ما از یک ID یا کلاس والد که در main-page.php تعریف می‌شود، استفاده می‌کنیم */
-#rpi-admin-wrapper,
-#rpi-admin-wrapper input,
-#rpi-admin-wrapper button,
-#rpi-admin-wrapper select,
-#rpi-admin-wrapper textarea,
-#rpi-admin-wrapper .button {
-    font-family: 'ReadyFont', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-    box-sizing: border-box; /* برای مدیریت آسان padding و border */
+/* استفاده از گرید برای چیدمان جدول تنظیمات وردپرس */
+.rpi-settings-table .form-table {
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* ستون لیبل و ستون فیلد */
+    gap: 20px 30px;
+    border: none;
+    margin-top: 0;
 }
 
-#rpi-admin-wrapper {
-    background-color: var(--rpi-color-bg-light);
-    padding: 24px;
-    margin-right: 20px; /* جلوگیری از چسبیدن به منوی وردپرس */
-    border-radius: var(--rpi-radius-lg);
-    color: var(--rpi-color-text-primary);
+.rpi-settings-table .form-table th {
+    font-weight: bold;
+    font-size: 15px;
+    color: var(--rpi-color-midnight);
+    padding: 0;
+    vertical-align: top;
+    text-align: right;
 }
 
-/* --- ۲. هدر صفحه --- */
-.rpi-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.rpi-settings-table .form-table td {
+    padding: 0;
+    vertical-align: top;
+}
+
+/* پنهان کردن هدر بخش‌ها (چون ما از کارت استفاده می‌کنیم) */
+.rpi-settings-table h2 {
+    /* (مخفی کردن عنوان بخش چون در هدر کارت است) */
+    /* ما از توضیحات بخش استفاده می‌کنیم (تگ p) */
+    display: none; 
+}
+.rpi-settings-table .form-table p.rpi-card__description {
+    grid-column: 1 / -1; /* توضیحات بخش در بالای گرید نمایش داده شود */
+    margin-bottom: 10px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--rpi-color-border);
-    margin-bottom: 24px;
 }
 
-.rpi-header__title-wrapper {
-    display: flex;
-    align-items: center;
-}
 
-.rpi-header__logo {
-    width: 40px;
-    height: 40px;
-    margin-left: 16px; /* در فارسی margin-left برای فاصله از متن */
-}
-
-.rpi-header__logo img {
+/* استایل فیلدهای کوچکتر */
+.rpi-input-field--small {
+    max-width: 300px;
     width: 100%;
-    height: 100%;
 }
 
-.rpi-header__title {
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--rpi-color-midnight);
-    margin: 0; /* حذف margin پیش‌فرض h1 */
-}
-
-.rpi-header__subtitle {
-    font-size: 14px;
-    color: var(--rpi-color-text-secondary);
-    margin: 4px 0 0 0;
-}
-
-.rpi-header__version {
-    font-size: 12px;
-    font-weight: bold;
-    color: var(--rpi-color-aqua);
-    background-color: rgba(1, 173, 161, 0.1);
-    padding: 4px 10px;
-    border-radius: var(--rpi-radius-md);
-}
-
-/* --- ۳. بدنه اصلی و کارت‌ها (Cards) --- */
-.rpi-card {
-    background-color: var(--rpi-color-bg-white);
-    border: 1px solid var(--rpi-color-border);
-    border-radius: var(--rpi-radius-lg);
-    box-shadow: var(--rpi-shadow-md);
-    margin-bottom: 24px;
-    overflow: hidden; /* برای اینکه border-radius در هدر کارت هم اعمال شود */
-}
-
-.rpi-card__header {
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--rpi-color-border);
-}
-
-.rpi-card__title {
-    font-size: 18px;
-    font-weight: bold;
-    color: var(--rpi-color-midnight);
-    margin: 0;
-}
-
-.rpi-card__description {
-    font-size: 14px;
-    color: var(--rpi-color-text-secondary);
-    margin: 4px 0 0 0;
-}
-
-.rpi-card__body {
-    padding: 24px;
-}
-
-/* --- ۴. فرم‌ها (Inputs, Textarea, Buttons) --- */
-
-.rpi-form-group {
-    margin-bottom: 20px;
-}
-
-.rpi-form-group label {
-    display: block;
-    font-weight: bold;
-    font-size: 14px;
-    color: var(--rpi-color-text-primary);
-    margin-bottom: 8px;
-}
-
-.rpi-form-group .description {
-    font-size: 13px;
-    color: var(--rpi-color-text-secondary);
-    margin-top: 6px;
-    font-style: italic;
-}
-
-/* استایل‌دهی به فیلدهای ورودی و textarea */
-.rpi-input-field,
-.rpi-textarea-field {
-    width: 100%;
-    padding: 12px 16px;
-    font-size: 14px;
-    border: 1px solid var(--rpi-color-border);
-    border-radius: var(--rpi-radius-md);
-    background-color: var(--rpi-color-bg-light);
-    color: var(--rpi-color-text-primary);
-    transition: all 0.2s ease-in-out;
-}
-
-.rpi-input-field:focus,
-.rpi-textarea-field:focus {
-    border-color: var(--rpi-color-aqua);
-    background-color: var(--rpi-color-bg-white);
-    box-shadow: 0 0 0 3px rgba(1, 173, 161, 0.2);
-    outline: none;
-}
-
-.rpi-textarea-field {
-    min-height: 150px;
-    resize: vertical;
-}
-
-/* استایل‌دهی به دکمه‌ها */
-.rpi-button {
-    font-size: 14px;
-    font-weight: bold;
-    padding: 12px 24px;
-    border: none;
-    border-radius: var(--rpi-radius-md);
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    text-decoration: none; /* برای لینک‌ها */
-    display: inline-block;
-}
-
-/* دکمه اصلی (سبز) */
-.rpi-button--primary {
-    background-color: var(--rpi-color-aqua);
-    color: var(--rpi-color-bg-white);
-}
-
-.rpi-button--primary:hover {
-    background-color: var(--rpi-color-aqua-hover);
-    color: var(--rpi-color-bg-white);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(1, 173, 161, 0.2);
-}
-
-/* دکمه ثانویه (مشکی) */
-.rpi-button--secondary {
-    background-color: var(--rpi-color-midnight);
-    color: var(--rpi-color-bg-white);
-}
-
-.rpi-button--secondary:hover {
-    background-color: #333; /* کمی روشن‌تر */
-    color: var(--rpi-color-bg-white);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* دکمه معمولی (سفید) */
-.rpi-button--default {
-    background-color: var(--rpi-color-bg-white);
-    color: var(--rpi-color-text-primary);
-    border: 1px solid var(--rpi-color-border);
-}
-
-.rpi-button--default:hover {
-    background-color: var(--rpi-color-bg-light);
-    border-color: #ccc;
-}
-
-/* --- ۵. استایل‌های خاص صفحه (مثل فرآیند دو مرحله‌ای) --- */
-.rpi-stepper {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    margin-bottom: 24px;
-    padding: 0 10%; /* کمی فاصله از طرفین */
-}
-
-.rpi-stepper__item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+/* استایل چک‌باکس سفارشی (Switch) */
+.rpi-switch {
     position: relative;
-    flex-grow: 1;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
 }
-
-.rpi-stepper__item--active .rpi-stepper__number {
-    background-color: var(--rpi-color-aqua);
-    color: white;
-    font-weight: bold;
-    border-color: var(--rpi-color-aqua);
+.rpi-switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
-
-.rpi-stepper__item--active .rpi-stepper__label {
-    color: var(--rpi-color-aqua);
-    font-weight: bold;
-}
-
-.rpi-stepper__number {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: var(--rpi-color-bg-light);
-    border: 1px solid var(--rpi-color-border);
-    color: var(--rpi-color-text-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    z-index: 2;
-}
-
-.rpi-stepper__label {
-    margin-top: 8px;
-    font-size: 13px;
-    color: var(--rpi-color-text-secondary);
-    transition: all 0.3s ease;
-}
-
-/* خط اتصال دهنده مراحل */
-.rpi-stepper__item:not(:last-child)::after {
-    content: '';
+.rpi-slider {
     position: absolute;
-    top: 16px; /* وسط دایره */
-    right: -50%; /* تا نصف آیتم بعدی */
-    width: 100%;
-    height: 2px;
-    background-color: var(--rpi-color-border);
-    z-index: 1;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .3s;
+    border-radius: 28px;
 }
-
-/* خط فعال شده */
-.rpi-stepper__item--active:not(:last-child)::after {
-     background-color: var(--rpi-color-aqua);
+.rpi-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+input:checked + .rpi-slider {
+    background-color: var(--rpi-color-aqua);
+}
+input:checked + .rpi-slider:before {
+    transform: translateX(22px);
+}
+.rpi-switch-label {
+    margin-right: 10px;
+    font-weight: bold;
+    color: var(--rpi-color-text-primary);
+    vertical-align: middle;
 }

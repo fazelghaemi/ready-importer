@@ -6,10 +6,6 @@
  * این کلاس مسئولیت اصلی مدیریت و ثبت تمام هوک‌های (actions و filters)
  * افزونه در وردپرس را بر عهده دارد.
  *
- * این کلاس به جای اینکه اجازه دهد هر ماژول مستقیماً با add_action و add_filter
- * کار کند، همه آن‌ها را در آرایه‌های داخلی خود جمع‌آوری کرده و سپس
- * به صورت یکجا و مدیریت شده ثبت می‌کند.
- *
  * @package    Ready_Importer
  * @subpackage Ready_Importer/includes
  * @author     Ready Studio
@@ -70,7 +66,6 @@ class Ready_Importer_Loader {
 
     /**
      * متد کمکی برای اضافه کردن هوک‌ها به آرایه‌های داخلی.
-     * این متد از تکرار کد در add_action و add_filter جلوگیری می‌کند.
      *
      * @access   private
      * @param array    $hooks          آرایه مرجع (actions یا filters) که هوک به آن اضافه می‌شود.
@@ -104,23 +99,13 @@ class Ready_Importer_Loader {
     public function run() {
         
         // ۱. بارگذاری و تعریف ماژول‌ها
-        // در اینجا ماژول‌های اصلی را فراخوانی می‌کنیم.
-        
-        // ماژول ادمین (برای منو، صفحات تنظیمات، CSS و JS)
         $admin_module = new Ready_Importer_Admin(RPI_VERSION);
-        
-        // ماژول ایجکس (برای مدیریت درخواست‌های پس‌زمینه)
-        // $ajax_module = new Ready_Importer_Ajax(RPI_VERSION);
-
-        // ماژول اسکرپر (منطق استخراج داده)
-        // $scraper_module = new Ready_Importer_Scraper();
-
-        // ماژول درون‌ریز (منطق ساخت محصول در ووکامرس)
-        // $importer_module = new Ready_Importer_Importer();
+        $ajax_module = new Ready_Importer_Ajax();
+        // $scraper_module = new Ready_Importer_Scraper(); (توسط ایجکس فراخوانی می‌شود)
+        // $importer_module = new Ready_Importer_Importer(); (توسط ایجکس فراخوانی می‌شود)
 
 
         // ۲. تعریف هوک‌های ماژول‌ها
-        // ما به لودر می‌گوییم که کدام متد از کدام ماژول باید به کدام هوک وردپرس متصل شود.
         
         // --- هوک‌های ماژول ادمین ---
         
@@ -130,20 +115,19 @@ class Ready_Importer_Loader {
         // هوک برای بارگذاری فایل‌های CSS و JS در صفحات ادمین افزونه
         $this->add_action('admin_enqueue_scripts', $admin_module, 'enqueue_styles_and_scripts');
 
+        // --- آپدیت مهم (فاز ۲): ثبت تنظیمات ---
+        // این هوک حیاتی، Settings API وردپرس را فعال می‌کند و باید فراخوانی شود.
+        $this->add_action('admin_init', $admin_module, 'register_settings');
+
         // هوک برای اضافه کردن لینک "تنظیمات" در صفحه افزونه‌ها
         $plugin_basename = RPI_PLUGIN_BASENAME; // از فایل اصلی
         $this->add_filter("plugin_action_links_{$plugin_basename}", $admin_module, 'add_settings_link');
 
 
         // --- هوک‌های ماژول ایجکس ---
-        // (فعلاً کامنت شده تا در مرحله بعد پیاده‌سازی شود)
-        /*
-        // هوک ایجکس برای شروع فرآیند اسکرپ
-        $this->add_action('wp_ajax_rpi_start_scraping', $ajax_module, 'handle_start_scraping');
         
-        // هوک ایجکس برای بررسی وضعیت اسکرپ
-        $this->add_action('wp_ajax_rpi_check_status', $ajax_module, 'handle_check_status');
-        */
+        // هوک ایجکس برای پردازش *یک* لینک
+        $this->add_action('wp_ajax_rpi_process_single_link', $ajax_module, 'handle_process_single_link');
 
 
         // ۳. ثبت نهایی هوک‌ها در وردپرس
