@@ -1,0 +1,75 @@
+<?php
+/**
+ * فایل View مرحله ۲: تنظیمات درون‌ریزی
+ *
+ * @package    Ready_Importer
+ * @subpackage Ready_Importer/admin/views
+ * @author     Ready Studio
+ */
+
+// جلوگیری از دسترسی مستقیم
+if (!defined('ABSPATH')) {
+    exit;
+}
+?>
+
+<div class="rpi-card">
+    <div class="rpi-card__header">
+        <h2 class="rpi-card__title"><?php _e('مرحله ۲: تنظیمات نهایی درون‌ریزی', RPI_TEXT_DOMAIN); ?></h2>
+        <p class="rpi-card__description">
+            <?php _e('تنظیمات مربوط به نحوه ذخیره محصولات در ووکامرس را انتخاب کنید.', RPI_TEXT_DOMAIN); ?>
+        </p>
+    </div>
+    <div class="rpi-card__body">
+        
+        <!-- انتخاب دسته‌بندی ووکامرس -->
+        <div class="rpi-form-group">
+            <label for="rpi-product-category"><?php _e('انتخاب دسته‌بندی مقصد', RPI_TEXT_DOMAIN); ?></label>
+            <?php
+                // نمایش دراپ‌داون دسته‌بندی‌های ووکامرس
+                wp_dropdown_categories(array(
+                    'taxonomy'         => 'product_cat', // فقط دسته‌بندی‌های ووکامرس
+                    'name'             => 'rpi_product_category',
+                    'id'               => 'rpi-product-category',
+                    'class'            => 'rpi-input-field', // استفاده از استایل فیلدها
+                    'show_option_none' => __('یک دسته‌بندی را انتخاب کنید...', RPI_TEXT_DOMAIN),
+                    'hierarchical'     => true,
+                    'value_field'      => 'term_id',
+                ));
+            ?>
+            <p class="description">
+                <?php _e('محصولات وارد شده در این دسته‌بندی قرار خواهند گرفت.', RPI_TEXT_DOMAIN); ?>
+            </p>
+        </div>
+
+        <!-- سایر تنظیمات -->
+         <div class="rpi-form-group">
+            <label for="rpi-product-status"><?php _e('وضعیت محصول پس از درون‌ریزی', RPI_TEXT_DOMAIN); ?></label>
+            <select id="rpi-product-status" name="rpi_product_status" class="rpi-input-field">
+                <option value="publish"><?php _e('منتشر شده', RPI_TEXT_DOMAIN); ?></option>
+                <option value="draft" selected><?php _e('پیش‌نویس (توصیه می‌شود)', RPI_TEXT_DOMAIN); ?></option>
+                <option value="pending"><?php _e('در انتظار بازبینی', RPI_TEXT_DOMAIN); ?></option>
+            </select>
+            <p class="description">
+                <?php _e('توصیه می‌شود ابتدا محصولات را به صورت پیش‌نویس وارد کنید تا بتوانید آن‌ها را بازبینی نمایید.', RPI_TEXT_DOMAIN); ?>
+            </p>
+        </div>
+
+        <!-- این دکمه در main-page.php مدیریت می‌شود -->
+
+    </div>
+</div>
+
+<div class="rpi-card">
+    <div class="rpi-card__header">
+        <h2 class="rpi-card__title"><?php _e('وضعیت فرآیند (Log)', RPI_TEXT_DOMAIN); ?></h2>
+    </div>
+    <div class="rpi-card__body">
+        <div id="rpi-progress-bar-container" style="display: none; /* فعلاً مخفی */">
+            <!-- نوار پیشرفت در اینجا قرار خواهد گرفت -->
+        </div>
+        <div id="rpi-log-container" style="height: 200px; background: #f0f0f0; border-radius: 8px; padding: 15px; overflow-y: auto; font-family: monospace; font-size: 12px; color: #333; border: 1px solid var(--rpi-color-border);">
+            <?php _e('برای شروع فرآیند، روی دکمه "شروع درون‌ریزی نهایی" کلیک کنید...', RPI_TEXT_DOMAIN); ?>
+        </div>
+    </div>
+</div>
