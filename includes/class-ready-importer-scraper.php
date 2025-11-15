@@ -1,9 +1,10 @@
 <?php
 /**
- * کلاس اسکرپر (Scraper)
+ * کلاس اسکرپر (Scraper) - نسخه حرفه‌ای (ارتقا یافته)
  *
- * مسئولیت اصلی: دریافت یک URL از دیجی‌کالا و استخراج تمام
- * اطلاعات محصول از صفحه HTML آن.
+ * بر اساس تحلیل واقعی دیجی‌کالا (dkp-15180004)
+ * 1. استخراج JSON-LD (پایه)
+ * 2. استخراج window['__PRELOADED_STATE__'] (پیشرفته و حیاتی)
  *
  * @package    Ready_Importer
  * @subpackage Ready_Importer/includes
@@ -17,83 +18,278 @@ if (!defined('ABSPATH')) {
 
 class Ready_Importer_Scraper {
 
+    private $dom;
+    private $xpath;
+    private $html_body = '';
+    
     /**
-     * سازنده کلاس.
+     * @var array|null داده‌های JSON-LD (برای گوگل)
      */
-    public function __construct() {
-        // می‌توان تنظیمات اولیه مثل User-Agent را در اینجا ست کرد.
-    }
+    private $json_ld_data = null;
+
+    /**
+     * @var array|null داده‌های اصلی صفحه (برای اپ)
+     */
+    private $preloaded_state = null;
 
     /**
      * متد اصلی: اسکرپ کردن داده‌های محصول
-     *
-     * @param string $url لینک صفحه محصول در دیجی‌کالا.
-     * @return array|WP_Error آرایه‌ای ساختاریافته از داده‌های محصول یا خطای وردپرس.
      */
     public function scrape_product_data($url) {
         
         // --- ۱. دریافت HTML صفحه ---
-        // ما از توابع داخلی وردپرس (WP_Http) استفاده می‌کنیم که امن‌تر و سازگارتر هستند.
         $response = wp_remote_get($url, array(
-            'timeout'    => 30, // ۳۰ ثانیه زمان انتظار
+            'timeout'    => 30,
             'user-agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            // استفاده از User-Agent مرورگر واقعی برای جلوگیری از بلاک شدن
         ));
 
         if (is_wp_error($response)) {
-            return new WP_Error('http_error', sprintf(__('خطا در برقراری ارتباط با دیجی‌کالا: %s', RPI_TEXT_DOMAIN), $response->get_error_message()));
+            return new WP_Error('http_error', sprintf(__('خطا در ارتباط: %s', RPI_TEXT_DOMAIN), $response->get_error_message()));
         }
-
         $http_code = wp_remote_retrieve_response_code($response);
         if ($http_code !== 200) {
-            return new WP_Error('http_code_error', sprintf(__('دیجی‌کالا با کد وضعیت %d پاسخ داد (لینک ممکن است اشتباه باشد یا سرور در دسترس نیست).', RPI_TEXT_DOMAIN), $http_code));
+            return new WP_Error('http_code_error', sprintf(__('دیجی‌کالا با کد %d پاسخ داد (لینک %s).', RPI_TEXT_DOMAIN), $http_code, $url));
+        }
+        $this->html_body = wp_remote_retrieve_body($response);
+        if (empty($this->html_body)) {
+            return new WP_Error('empty_body', __('پاسخ دریافتی خالی بود.', RPI_TEXT_DOMAIN));
         }
 
-        $html_body = wp_remote_retrieve_body($response);
-        if (empty($html_body)) {
-            return new WP_Error('empty_body', __('پاسخ دریافتی از دیجی‌کالا خالی بود.', RPI_TEXT_DOMAIN));
+        // --- ۲. آماده‌سازی پارسر (DOMDocument) ---
+        libxml_use_internal_errors(true);
+        $this->dom = new DOMDocument();
+        $this->dom->loadHTML($this->html_body);
+        libxml_clear_errors();
+        $this->xpath = new DOMXPath($this->dom);
+
+        // --- ۳. استخراج داده‌های کلیدی ---
+        $this->json_ld_data = $this->_extract_json_ld();
+        $this->preloaded_state = $this->_extract_preloaded_state();
+        
+        if ($this->preloaded_state === null && $this->json_ld_data === null) {
+            return new WP_Error('no_data', __('هیچ داده ساختاریافته‌ای (JSON-LD یا Preloaded State) پیدا نشد. ساختار دیجی‌کالا احتمالاً تغییر کرده.', RPI_TEXT_DOMAIN));
         }
 
-        // --- ۲. پارس کردن HTML (Parsing) ---
-        // این بخش، پیچیده‌ترین و شکننده‌ترین بخش کار است.
-        // ما باید از DOMDocument و XPath برای پیدا کردن عناصر استفاده کنیم.
+        // --- ۴. جمع‌آوری نهایی داده‌ها ---
+        $scraped_data = array();
         
-        // (کد زیر صرفاً یک شبیه‌سازی (Stub) است. در واقعیت، ما در اینجا
-        // به شدت به ساختار HTML دیجی‌کالا وابسته هستیم.)
-        
-        // TODO: پیاده‌سازی منطق کامل پارس کردن HTML با استفاده از
-        // libxml_use_internal_errors(true);
-        // $dom = new DOMDocument();
-        // $dom->loadHTML($html_body);
-        // $xpath = new DOMXPath($dom);
-        // $title_node = $xpath->query('//h1[contains(@class, "product-title")]')->item(0);
-        // ... و الی آخر ...
+        // اولویت با preloaded_state است، اگر نبود از json_ld
+        $main_product_data = $this->preloaded_state['product']['data'] ?? null;
 
-        // --- ۳. برگرداندن داده‌های شبیه‌سازی شده (برای تست) ---
-        // تا زمانی که منطق XPath کامل نشده، ما داده‌های نمونه برمی‌گردانیم
-        // تا بتوانیم فرآیند ایمپورتر و ایجکس را تست کنیم.
+        $scraped_data['title'] = $main_product_data['title_fa'] ?? $this->json_ld_data['name'] ?? '';
+        if (empty($scraped_data['title'])) {
+             return new WP_Error('no_title', __('عنوان محصول پیدا نشد.', RPI_TEXT_DOMAIN));
+        }
         
-        // از روی URL یک نام می‌سازیم
-        $fake_title = 'محصول تستی - ' . basename($url);
+        $scraped_data['sku'] = $main_product_data['dkp'] ? 'DKP-' . $main_product_data['dkp'] : ($this->json_ld_data['sku'] ?? 'RPI-' . rand(100000, 999999));
+        
+        // توضیحات معمولاً فقط در JSON-LD کامل است
+        $scraped_data['description'] = $this->json_ld_data['description'] ?? ($main_product_data['review']['description'] ?? '');
+        
+        // توضیحات کوتاه (ویژگی‌های کلیدی)
+        $scraped_data['short_description'] = $this->_scrape_short_description($main_product_data);
+        
+        $price_data = $this->_scrape_price($main_product_data);
+        $scraped_data['regular_price'] = $price_data['regular']; // قیمت‌ها به ریال هستند
+        $scraped_data['sale_price'] = $price_data['sale']; // قیمت‌ها به ریال هستند
 
-        return array(
-            'title'         => $fake_title,
-            'description'   => __('این توضیحات کامل محصول است که از دیجی‌کالا اسکرپ شده است.', RPI_TEXT_DOMAIN),
-            'short_description' => __('این توضیحات کوتاه محصول است.', RPI_TEXT_DOMAIN),
-            'sku'           => 'DKP-' . rand(100000, 999999),
-            'regular_price' => rand(100000, 500000),
-            'sale_price'    => '', // قیمت فروش (اختیاری)
-            'images'        => array(
-                // ما از placeholder ها استفاده می‌کنیم تا دانلود تصاویر تست شود
-                'https://placehold.co/800x800/01ADA1/FFFFFF?text=Ready+Importer+1',
-                'https://placehold.co/800x800/010101/FFFFFF?text=Ready+Importer+2',
-            ),
-            'attributes'    => array(
-                array('name' => 'رنگ', 'value' => 'سبز ردی', 'is_visible' => 1, 'is_variation' => 0),
-                array('name' => 'وزن', 'value' => '200 گرم', 'is_visible' => 1, 'is_variation' => 0),
-            ),
-            'categories'    => array('گوشی موبایل', 'لوازم دیجیتال'), // دسته‌بندی‌های دیجی‌کالا
-            'brand'         => 'ردی استودیو',
-        );
+        $scraped_data['images'] = $this->_scrape_images($main_product_data);
+        $scraped_data['attributes'] = $this->_scrape_attributes($main_product_data); // مشخصات فنی
+        $scraped_data['categories'] = $this->_scrape_categories($main_product_data);
+        $scraped_data['brand'] = $main_product_data['brand']['title_fa'] ?? $this->json_ld_data['brand']['name'] ?? '';
+
+        // استخراج متغیرها (رنگ‌ها، گارانتی‌ها)
+        $scraped_data['variations'] = $this->_scrape_variations($main_product_data);
+
+        if (empty($scraped_data['regular_price']) && !empty($scraped_data['variations'])) {
+            $prices = wp_list_pluck($scraped_data['variations'], 'price');
+            if (!empty($prices)) {
+                $scraped_data['regular_price'] = min($prices); // قیمت "شروع از" (به ریال)
+            }
+        }
+        
+        return $scraped_data;
+    }
+
+    /**
+     * متد کمکی: استخراج داده‌های JSON-LD از HTML.
+     */
+    private function _extract_json_ld() {
+        $nodes = $this->xpath->query('//script[@type="application/ld+json"]');
+        if ($nodes->length > 0) {
+            foreach ($nodes as $node) {
+                $json = json_decode($node->nodeValue, true);
+                if ($json && isset($json['@type']) && ($json['@type'] == 'Product' || in_array('Product', (array)$json['@type']))) {
+                    return $json;
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * متد کمکی: استخراج داده‌های PRELOADED_STATE از HTML.
+     */
+    private function _extract_preloaded_state() {
+        // این regex به دنبال آبجکت JSON بعد از window['__PRELOADED_STATE__'] = می‌گردد
+        if (preg_match('/window\[\'__PRELOADED_STATE__\'\]\s*=\s*({.*?});/s', $this->html_body, $matches)) {
+            if (isset($matches[1])) {
+                $json_data = json_decode($matches[1], true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    return $json_data;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * استخراج توضیحات کوتاه (ویژگی‌های کلیدی)
+     */
+    private function _scrape_short_description($main_product_data) {
+        if (isset($main_product_data['review']['attributes'])) {
+            $html = '<ul>';
+            foreach ($main_product_data['review']['attributes'] as $attr) {
+                 $html .= '<li>' . esc_html($attr['title']) . ': ' . esc_html($attr['values'][0]) . '</li>';
+            }
+            $html .= '</ul>';
+            return $html;
+        }
+        return '';
+    }
+
+    /**
+     * استخراج قیمت (به ریال)
+     */
+    private function _scrape_price($main_product_data) {
+        $prices = ['regular' => '', 'sale' => ''];
+        
+        // قیمت‌ها از preloaded_state بسیار دقیق‌تر هستند
+        $default_variant = $this->preloaded_state['variants']['data'][$main_product_data['default_variant']] ?? null;
+        
+        if ($default_variant) {
+            $prices['regular'] = $default_variant['price']['rrp_price']; // قیمت اصلی (ریال)
+            $prices['sale'] = $default_variant['price']['selling_price']; // قیمت فروش (ریال)
+            
+            // اگر قیمت فروش با اصلی یکی بود، یعنی تخفیف ندارد
+            if ($prices['regular'] == $prices['sale']) {
+                $prices['sale'] = '';
+            }
+            return $prices;
+        }
+
+        // فال‌بک به JSON-LD (کمتر دقیق)
+        if (isset($this->json_ld_data['offers'])) {
+            $offers = $this->json_ld_data['offers'][0] ?? $this->json_ld_data['offers'];
+            if (isset($offers['price'])) {
+                $prices['regular'] = preg_replace("/[^0-9]/", "", $offers['price']);
+            }
+        }
+        return $prices;
+    }
+
+    /**
+     * استخراج تصاویر گالری
+     */
+    private function _scrape_images($main_product_data) {
+        $images = array();
+        
+        // اولویت با preloaded_state
+        if (isset($main_product_data['images']['gallery'])) {
+            foreach ($main_product_data['images']['gallery'] as $img) {
+                $images[] = $img['url'][0]; // [0] معمولاً URL اصلی است
+            }
+        }
+        
+        // فال‌بک به JSON-LD
+        if (empty($images) && isset($this->json_ld_data['image'])) {
+            $images = (array)$this->json_ld_data['image'];
+        }
+        
+        // پاک‌سازی و حذف واترمارک
+        $cleaned_images = array();
+        foreach ($images as $img_url) {
+            $cleaned_images[] = preg_replace('/\?.*/', '', $img_url); // حذف query string
+        }
+        return array_unique(array_filter($cleaned_images));
+    }
+
+    /**
+     * استخراج مشخصات فنی (Attributes)
+     */
+    private function _scrape_attributes($main_product_data) {
+        $attributes = array();
+        if (isset($main_product_data['specifications'][0]['attributes'])) {
+            foreach ($main_product_data['specifications'][0]['attributes'] as $attr) {
+                $attributes[] = array(
+                    'name' => sanitize_text_field($attr['title']),
+                    'value' => implode(', ', $attr['values']), // مقادیر ممکن است آرایه باشند
+                    'is_visible' => 1,
+                    'is_variation' => 0
+                );
+            }
+        }
+        return $attributes;
+    }
+
+    /**
+     * استخراج دسته‌بندی‌ها (Breadcrumbs)
+     */
+    private function _scrape_categories($main_product_data) {
+        $categories = array();
+        if (isset($main_product_data['category']['title_fa'])) {
+             $categories[] = $main_product_data['category']['title_fa'];
+        }
+        // فال‌بک به بردکرامب (دقیق‌تر است)
+        if (isset($this->preloaded_state['breadcrumbs']['data']['items'])) {
+            $categories = array(); // پاک کردن قبلی
+             foreach ($this->preloaded_state['breadcrumbs']['data']['items'] as $item) {
+                 $categories[] = $item['title_fa'];
+             }
+        }
+        return array_filter($categories);
+    }
+
+    /**
+     * استخراج متغیرها (Variations)
+     */
+    private function _scrape_variations($main_product_data) {
+        $variations = array();
+        
+        // منبع اصلی داده: preloaded_state.variants.data
+        if (empty($this->preloaded_state['variants']['data'])) {
+            return $variations; // محصول ساده است
+        }
+        
+        $all_variants = $this->preloaded_state['variants']['data'];
+        
+        foreach ($all_variants as $variant_id => $variant) {
+            
+            $price_rial = $variant['price']['selling_price'];
+            $sku = $variant['id'] ?? $variant_id;
+            
+            // ویژگی‌های این متغیر (مثلاً رنگ و گارانتی)
+            $var_attributes = array();
+            
+            // ۱. استخراج رنگ
+            if (isset($variant['color']['title'])) {
+                $var_attributes[] = array('name' => 'رنگ', 'value' => $variant['color']['title']);
+            }
+            // ۲. استخراج گارانتی
+            if (isset($variant['warranty']['title_fa'])) {
+                 $var_attributes[] = array('name' => ' گارانتی', 'value' => $variant['warranty']['title_fa']);
+            }
+            // ... (می‌توان سایز و... را هم به همین شکل اضافه کرد)
+            
+            if (!empty($var_attributes)) {
+                 $variations[] = array(
+                     'sku' => 'DKP-VAR-' . $sku,
+                     'price' => $price_rial, // به ریال، تبدیل در Importer
+                     'attributes' => $var_attributes // آرایه‌ای از ویژگی‌ها
+                 );
+            }
+        }
+
+        return $variations;
     }
 }
