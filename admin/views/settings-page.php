@@ -2,21 +2,22 @@
 /**
  * فایل View صفحه تنظیمات (Settings Page)
  *
- * (این فایل دومین فایلی بود که خطا می‌داد)
+ * *تغییرات این نسخه: (رفع خطای Fatal Error)*
+ * - اضافه شدن بررسی `is_callable()` قبل از `call_user_func()` برای جلوگیری
+ * از خطای TypeError در صورتی که یک بخش callback نداشته باشد.
  *
  * @package    Ready_Importer
  * @subpackage Ready_Importer/admin/views
  * @author     Ready Studio
  */
 
-// جلوگیری از دسترسی مستقیم
+// ... (هدر فایل و متغیرهای $plugin_version و $logo_url بدون تغییر) ...
+
 if (!defined('ABSPATH')) {
     exit;
 }
-
 $plugin_version = defined('RPI_VERSION') ? RPI_VERSION : '1.0.0';
 $logo_url = RPI_PLUGIN_URL . 'assets/logo/readystudio-logo.svg';
-
 ?>
 
 <div class="wrap" id="rpi-admin-wrapper">
@@ -43,12 +44,7 @@ $logo_url = RPI_PLUGIN_URL . 'assets/logo/readystudio-logo.svg';
     <!-- ۲. فرم تنظیمات وردپرس -->
     <form method="post" action="options.php">
         <?php
-            // رندر کردن فیلدهای امنیتی و نام گروه
             settings_fields('rpi_settings_group');
-        ?>
-        
-        <?php
-            // رندر کردن بخش‌ها و فیلدها در کارت‌های مجزا
             
             global $wp_settings_sections;
             $page_slug = 'rpi_settings_group';
@@ -68,7 +64,10 @@ $logo_url = RPI_PLUGIN_URL . 'assets/logo/readystudio-logo.svg';
                 <table class="form-table">
                     <?php
                         if (isset($wp_settings_sections[$page_slug]['rpi_settings_section_pricing'])) {
-                            call_user_func($wp_settings_sections[$page_slug]['rpi_settings_section_pricing']['callback']);
+                            // --- (جدید) بررسی دفاعی ---
+                            if (is_callable($wp_settings_sections[$page_slug]['rpi_settings_section_pricing']['callback'])) {
+                                call_user_func($wp_settings_sections[$page_slug]['rpi_settings_section_pricing']['callback']);
+                            }
                             do_settings_fields($page_slug, 'rpi_settings_section_pricing');
                         }
                     ?>
@@ -85,7 +84,10 @@ $logo_url = RPI_PLUGIN_URL . 'assets/logo/readystudio-logo.svg';
                 <table class="form-table">
                     <?php
                         if (isset($wp_settings_sections[$page_slug]['rpi_settings_section_content'])) {
-                            call_user_func($wp_settings_sections[$page_slug]['rpi_settings_section_content']['callback']);
+                            // --- (جدید) بررسی دفاعی (این خط ۱۰۵ بود) ---
+                            if (is_callable($wp_settings_sections[$page_slug]['rpi_settings_section_content']['callback'])) {
+                                call_user_func($wp_settings_sections[$page_slug]['rpi_settings_section_content']['callback']);
+                            }
                             do_settings_fields($page_slug, 'rpi_settings_section_content');
                         }
                     ?>
@@ -102,7 +104,10 @@ $logo_url = RPI_PLUGIN_URL . 'assets/logo/readystudio-logo.svg';
                 <table class="form-table">
                     <?php
                         if (isset($wp_settings_sections[$page_slug]['rpi_settings_section_import'])) {
-                            call_user_func($wp_settings_sections[$page_slug]['rpi_settings_section_import']['callback']);
+                            // --- (جدید) بررسی دفاعی ---
+                            if (is_callable($wp_settings_sections[$page_slug]['rpi_settings_section_import']['callback'])) {
+                                call_user_func($wp_settings_sections[$page_slug]['rpi_settings_section_import']['callback']);
+                            }
                             do_settings_fields($page_slug, 'rpi_settings_section_import');
                         }
                     ?>
@@ -119,7 +124,10 @@ $logo_url = RPI_PLUGIN_URL . 'assets/logo/readystudio-logo.svg';
                 <table class="form-table">
                     <?php
                         if (isset($wp_settings_sections[$page_slug]['rpi_settings_section_api'])) {
-                            call_user_func($wp_settings_sections[$page_slug]['rpi_settings_section_api']['callback']);
+                            // --- (جدید) بررسی دفاعی ---
+                            if (is_callable($wp_settings_sections[$page_slug]['rpi_settings_section_api']['callback'])) {
+                                call_user_func($wp_settings_sections[$page_slug]['rpi_settings_section_api']['callback']);
+                            }
                             do_settings_fields($page_slug, 'rpi_settings_section_api');
                         }
                     ?>
