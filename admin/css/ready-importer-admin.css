@@ -1,93 +1,113 @@
-/* ... (تمام کدهای CSS از مرحله قبل) ... */
+/* ---
+ * فایل کامل استایل ادمین Ready Importer
+ * شامل تمام استایل‌های قبلی + استایل‌های متا باکس لاگ
+--- */
 
-/* --- ۷. استایل‌های خاص صفحه تنظیمات (فاز ۲) --- */
+/* ... (کدهای ۱ تا ۸: فونت، هدر، استپر، کارت‌ها، فرم‌ها، دکمه‌ها، لاگ زنده، تنظیمات، تکرارشونده‌ها - بدون تغییر) ... */
+#rpi-admin-wrapper { font-family: 'ReadyFont', sans-serif; margin-top: 20px; }
+#rpi-admin-wrapper h1, #rpi-admin-wrapper h2.nav-tab-wrapper { display: none; }
+.rpi-header { display: flex; justify-content: space-between; align-items: center; background: var(--rpi-color-bg-white); padding: 20px 24px; border-radius: var(--rpi-radius-lg); border: 1px solid var(--rpi-color-border); margin-bottom: 25px; }
+.rpi-header__title-wrapper { display: flex; align-items: center; gap: 16px; }
+.rpi-header__logo { background: var(--rpi-color-midnight); border-radius: var(--rpi-radius-md); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; }
+.rpi-header__logo img { width: 28px; height: 28px; }
+.rpi-header__title { font-size: 22px; font-weight: 700; color: var(--rpi-color-midnight); margin: 0; padding: 0; line-height: 1.2; }
+.rpi-header__subtitle { font-size: 14px; color: var(--rpi-color-text-secondary); margin: 4px 0 0 0; padding: 0; }
+.rpi-header__version { background: var(--rpi-color-bg-light); color: var(--rpi-color-text-secondary); font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: var(--rpi-radius-md); border: 1px solid var(--rpi-color-border); }
+.rpi-stepper { display: flex; justify-content: center; margin-bottom: 25px; padding: 0 20%; }
+.rpi-stepper__item { display: flex; align-items: center; flex: 1; position: relative; color: var(--rpi-color-text-secondary); opacity: 0.7; }
+.rpi-stepper__item:not(:last-child)::after { content: ''; display: block; flex: 1; height: 2px; background: var(--rpi-color-border); margin: 0 16px; }
+.rpi-stepper__number { width: 28px; height: 28px; border-radius: 50%; background: var(--rpi-color-bg-light); border: 1px solid var(--rpi-color-border); color: var(--rpi-color-text-secondary); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; transition: all 0.3s ease; }
+.rpi-stepper__label { margin-right: 12px; font-weight: 500; font-size: 15px; transition: all 0.3s ease; }
+.rpi-stepper__item--active { color: var(--rpi-color-aqua); opacity: 1; }
+.rpi-stepper__item--active .rpi-stepper__number { background: var(--rpi-color-aqua); color: var(--rpi-color-bg-white); border-color: var(--rpi-color-aqua); }
+.rpi-stepper__item--active .rpi-stepper__label { color: var(--rpi-color-midnight); font-weight: bold; }
+.rpi-stepper__item--active:not(:last-child)::after { background-color: var(--rpi-color-aqua); }
+.rpi-card { background: var(--rpi-color-bg-white); border-radius: var(--rpi-radius-lg); border: 1px solid var(--rpi-color-border); box-shadow: var(--rpi-shadow-md); margin-bottom: 25px; overflow: hidden; }
+.rpi-card__header { padding: 20px 24px; border-bottom: 1px solid var(--rpi-color-border); }
+.rpi-card__title { font-size: 18px; font-weight: 700; color: var(--rpi-color-midnight); margin: 0; padding: 0; }
+.rpi-card__description { font-size: 14px; color: var(--rpi-color-text-secondary); margin: 4px 0 0 0; padding: 0; }
+.rpi-card__body { padding: 24px; }
+.rpi-form-group { margin-bottom: 20px; }
+.rpi-form-group label { font-weight: bold; font-size: 14px; color: var(--rpi-color-midnight); display: block; margin-bottom: 8px; }
+.rpi-form-group .description { font-size: 13px; color: var(--rpi-color-text-secondary); margin-top: 8px; }
+.rpi-input-field, .rpi-textarea-field, #rpi-admin-wrapper select { width: 100%; padding: 10px 12px; border: 1px solid var(--rpi-color-border); border-radius: var(--rpi-radius-md); box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-family: 'ReadyFont', sans-serif; font-size: 14px; transition: all 0.2s ease; }
+.rpi-input-field:focus, .rpi-textarea-field:focus, #rpi-admin-wrapper select:focus { border-color: var(--rpi-color-aqua); box-shadow: 0 0 0 3px rgba(1, 173, 161, 0.2); outline: none; }
+.rpi-textarea-field { max-width: 100%; min-width: 100%; min-height: 120px; }
+.rpi-button, .rpi-button:visited { display: inline-block; padding: 10px 20px; font-size: 14px; font-weight: bold; border-radius: var(--rpi-radius-md); cursor: pointer; text-decoration: none; border: 1px solid transparent; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.rpi-button--primary { background: var(--rpi-color-aqua); color: white; }
+.rpi-button--primary:hover { background: var(--rpi-color-aqua-hover); color: white; }
+.rpi-button--default { background: var(--rpi-color-bg-white); color: var(--rpi-color-text-primary); border-color: var(--rpi-color-border); }
+.rpi-button--default:hover { background: var(--rpi-color-bg-light); border-color: #d1d5db; }
+.rpi-button[disabled] { opacity: 0.6; cursor: not-allowed; }
+#rpi-admin-wrapper .submit .rpi-button { margin: 0; }
 
-/* استفاده از گرید برای چیدمان جدول تنظیمات وردپرس */
-.rpi-settings-table .form-table {
-    display: grid;
-    grid-template-columns: 1fr 2fr; /* ستون لیبل و ستون فیلد */
-    gap: 20px 30px;
-    border: none;
-    margin-top: 0;
-}
+/* لاگ زنده (صفحه درون‌ریزی) */
+#rpi-log-container { height: 250px; background: var(--rpi-color-midnight); border-radius: var(--rpi-radius-md); padding: 15px; overflow-y: auto; font-family: monospace; font-size: 13px; color: #f1f1f1; border: 1px solid var(--rpi-color-border); line-height: 1.6; }
+.rpi-log-item { padding: 4px 8px; border-bottom: 1px solid #333; display: flex; align-items: center; }
+.rpi-log-item:last-child { border-bottom: none; }
+.rpi-log-item .log-icon { width: 10px; height: 10px; border-radius: 50%; margin-left: 10px; flex-shrink: 0; }
+.rpi-log-item .log-time { color: #888; margin-left: 8px; font-size: 11px; }
+.rpi-log-item.log-info .log-icon { background-color: #3b82f6; }
+.rpi-log-item.log-success .log-icon { background-color: #22c55e; }
+.rpi-log-item.log-error .log-icon { background-color: #ef4444; }
+.rpi-log-item.log-success { color: #a3e635; }
+.rpi-log-item.log-error { color: #fca5a5; font-weight: bold; }
+#rpi-progress-bar-container { margin-bottom: 20px; }
 
-.rpi-settings-table .form-table th {
-    font-weight: bold;
-    font-size: 15px;
-    color: var(--rpi-color-midnight);
+/* صفحه تنظیمات */
+.rpi-settings-table .form-table { border: none; margin-top: 0; width: 100%; }
+.rpi-settings-table .form-table th { font-weight: bold; font-size: 15px; color: var(--rpi-color-midnight); padding: 20px 0 10px; vertical-align: top; text-align: right; width: 30%; }
+.rpi-settings-table .form-table td { padding: 15px 0 10px; vertical-align: top; }
+.rpi-settings-table .form-table tr { border-bottom: 1px dashed var(--rpi-color-border); }
+.rpi-settings-table .form-table tr:last-child { border-bottom: none; }
+.rpi-settings-table .form-table th .description, .rpi-settings-table .form-table td .description { font-weight: normal; }
+.rpi-card__body .rpi-card__description { font-size: 14px; color: var(--rpi-color-text-secondary); margin: -10px 0 15px 0; padding-bottom: 20px; border-bottom: 1px solid var(--rpi-color-border); }
+.rpi-input-field--small { max-width: 300px; width: 100%; }
+.rpi-switch { position: relative; display: inline-block; width: 50px; height: 28px; vertical-align: middle; }
+.rpi-switch input { opacity: 0; width: 0; height: 0; }
+.rpi-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 28px; }
+.rpi-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+input:checked + .rpi-slider { background-color: var(--rpi-color-aqua); }
+input:checked + .rpi-slider:before { transform: translateX(22px); }
+.rpi-switch-label { margin-right: 10px; font-weight: 500; color: var(--rpi-color-text-primary); vertical-align: middle; }
+
+/* فیلدهای تکرارشونده */
+.rpi-repeater-wrapper { width: 100%; }
+.rpi-repeater-row { display: grid; grid-template-columns: 2fr 2fr 1.5fr 1.5fr 0.5fr; gap: 10px; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed var(--rpi-color-border); }
+.rpi-repeater-row:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.rpi-repeater-header { font-weight: bold; color: var(--rpi-color-midnight); font-size: 13px; border-bottom: 1px solid var(--rpi-color-border); padding-bottom: 10px; }
+#rpi-find-replace-wrapper .rpi-repeater-row { grid-template-columns: 2.5fr 2.5fr 1.5fr 0.5fr; }
+.rpi-repeater-template { display: none !important; }
+.rpi-button-remove-row { background: #fee2e2; color: #b91c1c; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; transition: all 0.2s ease; padding: 0; line-height: 28px; text-align: center; justify-self: center; }
+.rpi-button-remove-row:hover { background: #b91c1c; color: white; }
+
+/* --- ۹. (جدید) استایل‌های CPT (Task Manager) --- */
+
+/* بج‌های وضعیت در لیست CPT */
+.rpi-status-badge { display: inline-block; padding: 4px 10px; font-size: 12px; font-weight: bold; border-radius: var(--rpi-radius-md); color: #fff; background-color: #a0aec0; /* Gray */ }
+.rpi-status-badge.rpi-status-pending { background-color: #f59e0b; /* Amber */ }
+.rpi-status-badge.rpi-status-running { background-color: #3b82f6; /* Blue */ animation: rpi-pulse 1.5s infinite; }
+.rpi-status-badge.rpi-status-complete { background-color: #22c55e; /* Green */ }
+@keyframes rpi-pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+/* متا باکس نمایشگر لاگ (در صفحه ویرایش CPT) */
+#rpi_log_viewer_metabox .inside {
     padding: 0;
-    vertical-align: top;
-    text-align: right;
+    margin: 0;
 }
-
-.rpi-settings-table .form-table td {
-    padding: 0;
-    vertical-align: top;
+#rpi-log-viewer-metabox {
+    /* استایل‌های #rpi-log-container را کپی می‌کنیم */
+    height: 60vh; /* بلندتر */
+    background: var(--rpi-color-midnight); 
+    border-radius: 0; /* در متا باکس لبه‌ها گرد نیستند */
+    padding: 15px; 
+    overflow-y: auto; 
+    font-family: monospace; 
+    font-size: 13px; 
+    color: #f1f1f1; 
+    line-height: 1.6;
 }
-
-/* پنهان کردن هدر بخش‌ها (چون ما از کارت استفاده می‌کنیم) */
-.rpi-settings-table h2 {
-    /* (مخفی کردن عنوان بخش چون در هدر کارت است) */
-    /* ما از توضیحات بخش استفاده می‌کنیم (تگ p) */
-    display: none; 
-}
-.rpi-settings-table .form-table p.rpi-card__description {
-    grid-column: 1 / -1; /* توضیحات بخش در بالای گرید نمایش داده شود */
-    margin-bottom: 10px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--rpi-color-border);
-}
-
-
-/* استایل فیلدهای کوچکتر */
-.rpi-input-field--small {
-    max-width: 300px;
-    width: 100%;
-}
-
-/* استایل چک‌باکس سفارشی (Switch) */
-.rpi-switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 28px;
-}
-.rpi-switch input { 
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-.rpi-slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: .3s;
-    border-radius: 28px;
-}
-.rpi-slider:before {
-    position: absolute;
-    content: "";
-    height: 20px;
-    width: 20px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: .3s;
-    border-radius: 50%;
-}
-input:checked + .rpi-slider {
-    background-color: var(--rpi-color-aqua);
-}
-input:checked + .rpi-slider:before {
-    transform: translateX(22px);
-}
-.rpi-switch-label {
-    margin-right: 10px;
-    font-weight: bold;
-    color: var(--rpi-color-text-primary);
-    vertical-align: middle;
+/* مخفی کردن هدر متا باکس */
+#rpi_log_viewer_metabox .hndle {
+    display: none;
 }

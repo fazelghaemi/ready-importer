@@ -3,8 +3,8 @@
  * فایل View اصلی صفحه ادمین Ready Importer
  *
  * این فایل توسط کلاس Ready_Importer_Admin رندر می‌شود.
- * مسئولیت آن نمایش ساختار کلی صفحه، هدر، و فراخوانی
- * فایل‌های View مربوط به هر مرحله (Step) است.
+ * مسئولیت آن نمایش ساختار کلی صفحه، هدر، و مدیریت
+ * جابجایی بین فایل‌های View مربوط به هر مرحله (Step) است.
  *
  * @package    Ready_Importer
  * @subpackage Ready_Importer/admin/views
@@ -17,18 +17,13 @@ if (!defined('ABSPATH')) {
 }
 
 // دریافت نسخه افزونه (برای نمایش در هدر)
-// این متغیر در کلاس Admin در دسترس است، اما اینجا برای اطمینان مجدد تعریف می‌کنیم.
 $plugin_version = defined('RPI_VERSION') ? RPI_VERSION : '1.0.0';
 
 // دریافت آدرس لوگو
 $logo_url = RPI_PLUGIN_URL . 'assets/logo/readystudio-logo.svg';
 
-// تعیین مرحله فعلی (Step)
-// ما از یک query string ساده مثل ?step=2 استفاده خواهیم کرد.
-$current_step = isset($_GET['step']) ? intval($_GET['step']) : 1;
-if ($current_step !== 1 && $current_step !== 2) {
-    $current_step = 1;
-}
+// (منطق Stepper اکنون در JS مدیریت می‌شود، همیشه با 1 شروع کن)
+$current_step = 1;
 
 ?>
 
@@ -59,15 +54,14 @@ if ($current_step !== 1 && $current_step !== 2) {
         
         <!-- فرآیند گام به گام (Stepper) -->
         <div class="rpi-stepper">
-            <div class="rpi-stepper__item <?php echo ($current_step == 1) ? 'rpi-stepper__item--active' : ''; ?>">
+            <div class="rpi-stepper__item rpi-stepper__item--active">
                 <div class="rpi-stepper__number">1</div>
                 <div class="rpi-stepper__label"><?php _e('لینک محصولات', RPI_TEXT_DOMAIN); ?></div>
             </div>
-            <div class="rpi-stepper__item <?php echo ($current_step == 2) ? 'rpi-stepper__item--active' : ''; ?>">
+            <div class="rpi-stepper__item">
                 <div class="rpi-stepper__number">2</div>
                 <div class="rpi-stepper__label"><?php _e('تنظیمات درون‌ریزی', RPI_TEXT_DOMAIN); ?></div>
             </div>
-            <!-- گام سوم (پردازش) را می‌توان بعداً اضافه کرد -->
         </div>
 
         <!-- 
@@ -79,33 +73,50 @@ if ($current_step !== 1 && $current_step !== 2) {
                 // توکن امنیتی وردپرس برای فرم
                 wp_nonce_field('rpi_importer_action', 'rpi_importer_nonce');
             ?>
+            
+            <!-- فیلد مخفی برای ذخیره لینک‌های *خام* وارد شده توسط کاربر -->
+            <input type="hidden" id="rpi-links-storage" name="rpi_links_storage">
 
             <!-- محتوای مرحله ۱: دریافت لینک‌ها -->
-            <div id="rpi-step-1-content" <?php echo ($current_step == 1) ? '' : 'style="display:none;"'; ?>>
-                <?php require_once RPI_PLUGIN_PATH . 'admin/views/step-1-links.php'; ?>
+            <div id="rpi-step-1-content">
+                <?php
+                    // این فایل باید وجود داشته باشد
+                    if (file_exists(RPI_PLUGIN_PATH . 'admin/views/step-1-links.php')) {
+                        require_once RPI_PLUGIN_PATH . 'admin/views/step-1-links.php';
+                    } else {
+                        echo '<div class="rpi-card"><div class="rpi-card__body"><b>خطای Fatal:</b> فایل <code>admin/views/step-1-links.php</code> یافت نشد.</div></div>';
+                    }
+                ?>
             </div>
 
             <!-- محتوای مرحله ۲: تنظیمات دسته‌بندی -->
-            <div id="rpi-step-2-content" <?php echo ($current_step == 2) ? '' : 'style="display:none;"'; ?>>
-                <?php require_once RPI_PLUGIN_PATH . 'admin/views/step-2-settings.php'; ?>
+            <div id="rpi-step-2-content" style="display:none;">
+                 <?php
+                    // این فایل باید وجود داشته باشد
+                    if (file_exists(RPI_PLUGIN_PATH . 'admin/views/step-2-settings.php')) {
+                        require_once RPI_PLUGIN_PATH . 'admin/views/step-2-settings.php';
+                    } else {
+                        echo '<div class="rpi-card"><div class="rpi-card__body"><b>خطای Fatal:</b> فایل <code>admin/views/step-2-settings.php</code> یافت نشد.</div></div>';
+                    }
+                ?>
             </div>
 
-            <!-- دکمه‌های ناوبری -->
+            <!-- دکمه‌های ناوبری (توسط JS مدیریت می‌شوند) -->
             <div class="rpi-navigation-buttons" style="display: flex; justify-content: space-between; margin-top: 24px;">
                 
                 <!-- دکمه بازگشت (فقط در مرحله ۲ نمایش داده می‌شود) -->
-                <a href="<?php echo esc_url(admin_url('admin.php?page=' . $this->plugin_slug . '&step=1')); ?>"
-                   class="rpi-button rpi-button--default <?php echo ($current_step == 2) ? '' : 'hidden'; ?>">
+                <button type="button" id="rpi-back-button"
+                   class="rpi-button rpi-button--default"
+                   style="display: none;">
                    <?php _e(' بازگشت (مرحله قبل)', RPI_TEXT_DOMAIN); ?>
-                </a>
+                </button>
 
-                <!-- دکمه ادامه (فقط در مرحله ۱ نمایش داده می‌شود) -->
-                <!-- این دکمه در فایل step-1-links.php قرار داده شده تا بخشی از فرم باشد -->
+                <!-- دکمه ادامه (در step-1-links.php قرار دارد) -->
                 
                 <!-- دکمه شروع درون‌ریزی (فقط در مرحله ۲ نمایش داده می‌شود) -->
-                 <button id="rpi-start-import-button"
-                        class="rpi-button rpi-button--primary <?php echo ($current_step == 2) ? '' : 'hidden'; ?>"
-                        style="margin-right: auto; /* دکمه را به سمت راست (در RTL) می‌برد */">
+                 <button type="button" id="rpi-start-import-button"
+                        class="rpi-button rpi-button--primary"
+                        style="margin-right: auto; display: none;">
                     <?php _e('شروع درون‌ریزی نهایی', RPI_TEXT_DOMAIN); ?>
                 </button>
             </div>

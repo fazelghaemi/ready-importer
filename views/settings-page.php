@@ -2,7 +2,7 @@
 /**
  * فایل View صفحه تنظیمات (Settings Page)
  *
- * --- جدید (فاز ۲) ---
+ * --- آپدیت (فاز ۲) ---
  *
  * این فایل فرم HTML صفحه تنظیمات را با استفاده از
  * Settings API وردپرس و با همان برندینگ ردی استودیو رندر می‌کند.
@@ -44,6 +44,9 @@ $logo_url = RPI_PLUGIN_URL . 'assets/logo/readystudio-logo.svg';
             <span><?php printf(__('نسخه %s', RPI_TEXT_DOMAIN), esc_html($plugin_version)); ?></span>
         </div>
     </header>
+    
+    <!-- نمایش پیام ذخیره شدن تنظیمات وردپرس -->
+    <?php settings_errors(); ?>
 
     <!-- ۲. فرم تنظیمات وردپرس -->
     <form method="post" action="options.php">
@@ -55,12 +58,82 @@ $logo_url = RPI_PLUGIN_URL . 'assets/logo/readystudio-logo.svg';
         <!-- 
             ما بخش‌ها را درون کارت‌های زیبای خودمان رندر می‌کنیم 
             do_settings_sections نام گروه را *نمی‌گیرد*، بلکه شناسه صفحه (slug) را می‌گیرد.
+            در کلاس Settings ما شناسه صفحه را rpi_settings_group ثبت کردیم.
         -->
         
+        <?php
+            // ما باید بخش‌ها را به صورت دستی در کارت‌ها بچینیم
+            // متأسفانه do_settings_sections() همه را با هم چاپ می‌کند.
+            // ما از do_settings_fields() برای هر بخش استفاده می‌کنیم.
+            
+            global $wp_settings_sections;
+            
+            // اطمینان از اینکه فقط بخش‌های صفحه خودمان را رندر می‌کنیم
+            $page_slug = 'rpi_settings_group';
+            if (!isset($wp_settings_sections[$page_slug])) {
+                return;
+            }
+
+        ?>
+
         <!-- کارت اول: تنظیمات قیمت‌گذاری -->
         <div class="rpi-card">
+            <div class="rpi-card__header">
+                <h2 class="rpi-card__title"><?php _e('قوانین قیمت‌گذاری', RPI_TEXT_DOMAIN); ?></h2>
+            </div>
             <div class="rpi-card__body rpi-settings-table">
-                <?php do_settings_sections('rpi_settings_group'); // شناسه صفحه ما ?>
+                <table class="form-table">
+                    <?php
+                        // چاپ توضیحات بخش و تمام فیلدهای این بخش
+                        call_user_func($wp_settings_sections[$page_slug]['rpi_settings_section_pricing']['callback']);
+                        do_settings_fields($page_slug, 'rpi_settings_section_pricing');
+                    ?>
+                </table>
+            </div>
+        </div>
+        
+        <!-- کارت دوم: تنظیمات محتوا (سئو) -->
+        <div class="rpi-card">
+            <div class="rpi-card__header">
+                <h2 class="rpi-card__title"><?php _e('قوانین محتوا (سئو)', RPI_TEXT_DOMAIN); ?></h2>
+            </div>
+            <div class="rpi-card__body rpi-settings-table">
+                <table class="form-table">
+                    <?php
+                        call_user_func($wp_settings_sections[$page_slug]['rpi_settings_section_content']['callback']);
+                        do_settings_fields($page_slug, 'rpi_settings_section_content');
+                    ?>
+                </table>
+            </div>
+        </div>
+
+        <!-- کارت سوم: تنظیمات درون‌ریزی -->
+        <div class="rpi-card">
+            <div class="rpi-card__header">
+                <h2 class="rpi-card__title"><?php _e('تنظیمات درون‌ریزی', RPI_TEXT_DOMAIN); ?></h2>
+            </div>
+            <div class="rpi-card__body rpi-settings-table">
+                <table class="form-table">
+                    <?php
+                        call_user_func($wp_settings_sections[$page_slug]['rpi_settings_section_import']['callback']);
+                        do_settings_fields($page_slug, 'rpi_settings_section_import');
+                    ?>
+                </table>
+            </div>
+        </div>
+        
+        <!-- کارت چهارم: تنظیمات پیشرفته (API) -->
+        <div class="rpi-card">
+            <div class="rpi-card__header">
+                <h2 class="rpi-card__title"><?php _e('تنظیمات پیشرفته (API)', RPI_TEXT_DOMAIN); ?></h2>
+            </div>
+            <div class="rpi-card__body rpi-settings-table">
+                <table class="form-table">
+                    <?php
+                        call_user_func($wp_settings_sections[$page_slug]['rpi_settings_section_api']['callback']);
+                        do_settings_fields($page_slug, 'rpi_settings_section_api');
+                    ?>
+                </table>
             </div>
         </div>
         
