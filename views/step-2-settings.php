@@ -1,8 +1,7 @@
 <?php
 /**
  * فایل View مرحله ۲: تنظیمات درون‌ریزی و لاگ
- *
- * (این فایل کامل و به‌روز است)
+ * (این فایل توسط main-page.php بارگذاری می‌شود)
  *
  * @package    Ready_Importer
  * @subpackage Ready_Importer/admin/views

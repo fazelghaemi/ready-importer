@@ -1,8 +1,7 @@
 <?php
 /**
  * فایل View مرحله ۱: دریافت لینک‌ها
- *
- * (این فایل از آپدیت "فاز ۳ - اسکرپ دسته‌ای" است)
+ * (این فایل توسط main-page.php بارگذاری می‌شود)
  *
  * @package    Ready_Importer
  * @subpackage Ready_Importer/admin/views

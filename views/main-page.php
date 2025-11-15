@@ -1,6 +1,7 @@
 <?php
 /**
  * فایل View اصلی صفحه ادمین Ready Importer
+ * (صفحه "درون‌ریزی جدید")
  *
  * این فایل توسط کلاس Ready_Importer_Admin رندر می‌شود.
  * مسئولیت آن نمایش ساختار کلی صفحه، هدر، و مدیریت
@@ -21,9 +22,6 @@ $plugin_version = defined('RPI_VERSION') ? RPI_VERSION : '1.0.0';
 
 // دریافت آدرس لوگو
 $logo_url = RPI_PLUGIN_URL . 'assets/logo/readystudio-logo.svg';
-
-// (منطق Stepper اکنون در JS مدیریت می‌شود، همیشه با 1 شروع کن)
-$current_step = 1;
 
 ?>
 
@@ -65,12 +63,11 @@ $current_step = 1;
         </div>
 
         <!-- 
-            بارگذاری فایل View مربوط به هر مرحله
-            ما از یک فرم واحد استفاده می‌کنیم که بین مراحل جابجا می‌شود
+            فرم واحد که بین مراحل جابجا می‌شود
         -->
         <form id="rpi-importer-form" method="POST" action="">
             <?php
-                // توکن امنیتی وردپرس برای فرم
+                // توکن امنیتی وردپرس
                 wp_nonce_field('rpi_importer_action', 'rpi_importer_nonce');
             ?>
             
@@ -80,7 +77,7 @@ $current_step = 1;
             <!-- محتوای مرحله ۱: دریافت لینک‌ها -->
             <div id="rpi-step-1-content">
                 <?php
-                    // این فایل باید وجود داشته باشد
+                    // بارگذاری فایل مرحله ۱
                     if (file_exists(RPI_PLUGIN_PATH . 'admin/views/step-1-links.php')) {
                         require_once RPI_PLUGIN_PATH . 'admin/views/step-1-links.php';
                     } else {
@@ -92,7 +89,7 @@ $current_step = 1;
             <!-- محتوای مرحله ۲: تنظیمات دسته‌بندی -->
             <div id="rpi-step-2-content" style="display:none;">
                  <?php
-                    // این فایل باید وجود داشته باشد
+                    // بارگذاری فایل مرحله ۲
                     if (file_exists(RPI_PLUGIN_PATH . 'admin/views/step-2-settings.php')) {
                         require_once RPI_PLUGIN_PATH . 'admin/views/step-2-settings.php';
                     } else {
@@ -104,7 +101,7 @@ $current_step = 1;
             <!-- دکمه‌های ناوبری (توسط JS مدیریت می‌شوند) -->
             <div class="rpi-navigation-buttons" style="display: flex; justify-content: space-between; margin-top: 24px;">
                 
-                <!-- دکمه بازگشت (فقط در مرحله ۲ نمایش داده می‌شود) -->
+                <!-- دکمه بازگشت -->
                 <button type="button" id="rpi-back-button"
                    class="rpi-button rpi-button--default"
                    style="display: none;">
@@ -113,7 +110,7 @@ $current_step = 1;
 
                 <!-- دکمه ادامه (در step-1-links.php قرار دارد) -->
                 
-                <!-- دکمه شروع درون‌ریزی (فقط در مرحله ۲ نمایش داده می‌شود) -->
+                <!-- دکمه شروع درون‌ریزی -->
                  <button type="button" id="rpi-start-import-button"
                         class="rpi-button rpi-button--primary"
                         style="margin-right: auto; display: none;">
